@@ -16,7 +16,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import csv
 import os
-
+from wavelengths import WAVELENGTHS
 
 class HSI_RGB_Viewer(QMainWindow):
     def __init__(self):
@@ -255,23 +255,32 @@ class HSI_RGB_Viewer(QMainWindow):
 
     def plot_intensity_density(self, intensity_values):
         """
-        Plot the intensity density of a selected pixel.
+        Plot the intensity density of a selected pixel using the wavelength dictionary.
         """
-        # Clear previous plots
+
         for i in reversed(range(self.plot_layout.count())):
             self.plot_layout.itemAt(i).widget().setParent(None)
 
-        # Create the Matplotlib figure
+
         figure = Figure()
         canvas = FigureCanvas(figure)
         self.plot_layout.addWidget(canvas)
 
-        # Add the plot
         ax = figure.add_subplot(111)
-        ax.plot(intensity_values, marker="o")
-        ax.set_title("Intensity Density Plot")
-        ax.set_xlabel("Spectral Band")
-        ax.set_ylabel("Intensity")
+
+
+        if len(intensity_values) == 204:
+
+            x_values = [WAVELENGTHS[i + 1] for i in range(len(intensity_values))]
+            ax.set_xlabel("Wavelength (nm)")
+        else:
+            x_values = np.arange(len(intensity_values))
+            ax.set_xlabel("Spectral Band")
+
+        ax.plot(x_values, intensity_values, marker="o")
+        ax.set_title("Reflectance percentage by channel")
+        ax.set_ylabel("Reflection")
+
         canvas.draw()
 
     def handle_export_histogram(self):
@@ -293,7 +302,7 @@ class HSI_RGB_Viewer(QMainWindow):
             x = int(event.pos().x() * img_width / label_width)
             y = int(event.pos().y() * img_height / label_height)
 
-            # היפוך ציר ה-x
+
             x = img_width - x - 1
 
 
